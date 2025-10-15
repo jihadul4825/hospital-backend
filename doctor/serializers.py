@@ -1,32 +1,102 @@
 from rest_framework import serializers
-from .models import Doctor, Specialization, Designation, AvailableTime, Review
-
-class DoctorSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(many=False)
-    class Meta:
-        model = Doctor
-        fields = '__all__'
+from .models import Doctor, Specialization, Designation, AvailableTime, Review, User
+from django.db import transaction
 
 
 class SpecializationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Specialization
-        fields = '__all__'
-
+        fields = ['id', 'name']
 
 class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
-        fields = '__all__'
-
+        fields = ['id', 'name']
 
 class AvailableTimeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailableTime
-        fields = '__all__'
-        
+        fields = ['id', 'name']
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+
+# ---------- Read serializer ---------
+class DoctorReadSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(many=False)
+    designation = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+    specialization = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+    available_time = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+
+    class Meta:
+        model = Doctor
+        fields = [
+            'id', 'user', 'image',
+            'designation', 'specialization', 'available_time',
+            'fee', 'meet_link'
+        ]
+        
+        
+#  -------- Write serializer ---------
+class DoctorWriteSerializer(serializers.ModelSerializer):
+    # show user if user is not patient
+    user = serializers.PrimaryKeyRelatedField(
+        many=False, 
+        queryset=User.objects.filter(is_staff=False, is_superuser=False)
+        .exclude(patient__isnull=False)
+        .exclude(id__in=Doctor.objects.values_list('user', flat=True))
+    )
+    designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
+    specialization = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialization.objects.all())
+    available_time = serializers.PrimaryKeyRelatedField(many=True, queryset=AvailableTime.objects.all())
+
+    class Meta:
+        model = Doctor
+        fields = [
+            'user','image', 'designation', 'specialization', 'available_time',
+            'fee', 'meet_link'
+        ]
+    
+    
+    def create(self, validated_data):
+        designation = validated_data.pop('designation', [])
+        specialization = validated_data.pop('specialization', [])
+        available_time = validated_data.pop('available_time', [])
+        
+        with transaction.atomic():
+            doctor = Doctor.objects.create(**validated_data)
+            if designation:
+                doctor.designation.set(designation)
+            if specialization:
+                doctor.specialization.set(specialization)
+            if available_time:
+                doctor.available_time.set(available_time)
+            return doctor
+        
+    def update(self, instance, validated_data):
+        designation = validated_data.pop('designation', None)
+        specialization = validated_data.pop('specialization', None)
+        available_time = validated_data.pop('available_time', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        if designation:
+            instance.designation.set(designation)
+        if specialization:
+            instance.specialization.set(specialization)
+        if available_time:
+            instance.available_time.set(available_time)
+        
+        return instance
+        
+        
+        
+        
+
+    
+    
