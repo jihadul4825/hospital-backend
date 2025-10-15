@@ -21,6 +21,7 @@ class PatientWriteSerializer(serializers.ModelSerializer):
         .exclude(doctor__isnull=False)
         .exclude(id__in=Patient.objects.values_list('user', flat=True))
     )
+    
     class Meta:
         model = Patient
         fields = ['user', 'image', 'mobile_no']
