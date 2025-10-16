@@ -45,9 +45,8 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
     # show user if user is not patient
     user = serializers.PrimaryKeyRelatedField(
         many=False, 
-        queryset=User.objects.filter(is_staff=False, is_superuser=False)
+        queryset=User.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
         .exclude(patient__isnull=False)
-        .exclude(id__in=Doctor.objects.values_list('user', flat=True))
     )
     designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
     specialization = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialization.objects.all())

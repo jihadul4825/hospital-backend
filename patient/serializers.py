@@ -18,8 +18,7 @@ class PatientWriteSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         many=False, 
         queryset=User.objects.filter(is_staff=False, is_superuser=False)
-        .exclude(doctor__isnull=False)
-        .exclude(id__in=Patient.objects.values_list('user', flat=True))
+        .exclude(doctor__isnull=False,)
     )
     
     class Meta:
