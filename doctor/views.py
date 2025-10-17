@@ -10,6 +10,8 @@ from .serializers import (
     DoctorWriteSerializer
 )
 
+
+
 class DoctorViewSet(viewsets.ModelViewSet):
     queryset = Doctor.objects.select_related('user').prefetch_related(
         'designation', 'specialization', 'available_time'
