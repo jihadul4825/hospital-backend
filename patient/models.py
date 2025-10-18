@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+from user.models import Account
 
 
 class Patient(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(Account, on_delete=models.CASCADE)
     image = models.ImageField(upload_to="patient/images/", null=True, blank=True)
     mobile_no = models.CharField(max_length=12)
     

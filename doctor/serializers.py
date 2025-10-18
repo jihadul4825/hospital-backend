@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Doctor, Specialization, Designation, AvailableTime, Review, User
+from .models import Doctor, Specialization, Designation, AvailableTime, Review, Account
 from django.db import transaction
 
 
@@ -35,7 +35,7 @@ class DoctorReadSerializer(serializers.ModelSerializer):
         model = Doctor
         fields = [
             'id', 'user', 'image',
-            'designation', 'specialization', 'available_time',
+            'designation', 'specialization', 'available_time', 'mobile_no',
             'fee', 'meet_link'
         ]
         
@@ -45,7 +45,7 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
     # show user if user is not patient
     user = serializers.PrimaryKeyRelatedField(
         many=False, 
-        queryset=User.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
+        queryset=Account.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
         .exclude(patient__isnull=False)
     )
     designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
@@ -55,7 +55,7 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = [
-            'user','image', 'designation', 'specialization', 'available_time',
+            'user','image', 'designation', 'specialization', 'available_time','mobile_no',
             'fee', 'meet_link'
         ]
     
@@ -75,6 +75,7 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
                 doctor.available_time.set(available_time)
             return doctor
         
+    @transaction.atomic
     def update(self, instance, validated_data):
         designation = validated_data.pop('designation', None)
         specialization = validated_data.pop('specialization', None)

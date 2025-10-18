@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Patient, User
+from .models import Patient, Account
+from django.db import transaction
 
 
 
@@ -17,7 +18,7 @@ class PatientReadSerializer(serializers.ModelSerializer):
 class PatientWriteSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         many=False, 
-        queryset=User.objects.filter(is_staff=False, is_superuser=False)
+        queryset=Account.objects.filter(is_staff=False, is_superuser=False)
         .exclude(doctor__isnull=False,)
     )
     
@@ -25,31 +26,16 @@ class PatientWriteSerializer(serializers.ModelSerializer):
         model = Patient
         fields = ['user', 'image', 'mobile_no']
         
-
-# class RegistrationSerializer(serializers.ModelSerializer):
-#     confirm_password = serializers.CharField(required=True)
-#     class Meta:
-#         fields = ['username', 'first_name', 'last_name', 'email', 'password', 'confirm_password']
         
-#     def save(self):
-#         username = self.validated_data['username']
-#         email = self.validated_data['email']
-#         password = self.validated_data['password']
-#         confirm_password = self.validated_data['confirm_password']
+    def create(self, validated_data):
+        with transaction.atomic():
+            return Patient.objects.create(**validated_data)
         
-#         if password != confirm_password:
-#             raise serializers.ValidationError({
-#                 "error": "Passwords Doesn't Match."
-#             })
-            
-#         if User.objects.filter(email=email).exists():
-#             raise serializers.ValidationError({
-#                 "error": "Email already exists."
-#             })
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
             
         
-#         account = User.objects.create_user(username=username, email=email, password=password) 
-#         print(account)
-#         account.save()   
-#         return account
-
