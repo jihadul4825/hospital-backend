@@ -47,6 +47,7 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
         many=False, 
         queryset=Account.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
         .exclude(patient__isnull=False)
+        .exclude(doctor__isnull=False,)
     )
     designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
     specialization = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialization.objects.all())
@@ -58,7 +59,18 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
             'user','image', 'designation', 'specialization', 'available_time','mobile_no',
             'fee', 'meet_link'
         ]
+        
     
+    def validate_user(self, value):
+        # If creating, reject any Account that already has a Doctor
+        if self.instance is None and hasattr(value, 'doctor'):
+            raise serializers.ValidationError("User already has a Doctor")
+        
+        # If updating, allow the same user but disallow switching to another already-doctor user
+        if self.instance is not None and value != self.instance.user and hasattr(value, 'doctor'):
+            raise serializers.ValidationError("Selected account already belongs to another doctor.")
+        return value 
+        
     
     def create(self, validated_data):
         designation = validated_data.pop('designation', [])

@@ -26,6 +26,7 @@ urlpatterns = [
     path('patients/', include('patient.urls')),
     path('doctors/', include('doctor.urls')),
     path('appointments/', include('appointment.urls')),
+    path('users/', include('user.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

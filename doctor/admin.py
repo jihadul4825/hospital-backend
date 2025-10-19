@@ -1,4 +1,5 @@
 from django.contrib import admin
+from user.models import Account
 
 from . import models
 
@@ -8,6 +9,9 @@ class SpecializationAdmin(admin.ModelAdmin):
 class DesignationAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',), }
     
+
+    
+ 
     
 admin.site.register(models.Designation, SpecializationAdmin)
 admin.site.register(models.Specialization, DesignationAdmin)

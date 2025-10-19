@@ -43,6 +43,7 @@ class Account(AbstractBaseUser):
     username = models.CharField(max_length=50)
     email = models.CharField(max_length=50, unique=True)
     
+    
     # required
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now_add=True)
@@ -57,7 +58,7 @@ class Account(AbstractBaseUser):
     objects = MyAccountManager()
 
     def __str__(self):
-        return self.email
+        return self.username
     
     def has_perm(self, perm, obj=None):
         return self.is_admin

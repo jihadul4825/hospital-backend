@@ -57,6 +57,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'hospital.urls'
+AUTH_USER_MODEL = 'user.Account'
 
 TEMPLATES = [
     {
