@@ -26,6 +26,17 @@ class PatientWriteSerializer(serializers.ModelSerializer):
         model = Patient
         fields = ['user', 'image', 'mobile_no']
         
+    
+    def validate_user(self, value):
+        # If creating, reject any Account that already has a Patient
+        if self.instance is None and hasattr(value, 'patient'):
+            raise serializers.ValidationError("User already has a Patient")
+        
+        # If updating, allow the same user but disallow switching to another already-patient user
+        if self.instance is not None and value != self.instance.user and hasattr(value, 'patient'):
+            raise serializers.ValidationError("Selected account already belongs to another patient.")
+        return value
+    
         
     def create(self, validated_data):
         with transaction.atomic():

@@ -2,6 +2,10 @@ from rest_framework import serializers
 from .models import Account
 from django.db import transaction
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+
 
 class AccountSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=True, write_only=True)

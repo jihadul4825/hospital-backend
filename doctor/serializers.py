@@ -47,7 +47,7 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
         many=False, 
         queryset=Account.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
         .exclude(patient__isnull=False)
-        .exclude(doctor__isnull=False,)
+        # .exclude(doctor__isnull=False,)
     )
     designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
     specialization = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialization.objects.all())

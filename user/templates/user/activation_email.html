@@ -1,0 +1,11 @@
+{% autoescape off %}
+Hi {{ user.first_name }},
+
+Thanks for registering!
+Please click below to activate your account:
+
+<a href="{{ activation_link }}" target="_blank">{{ activation_link }}</a>
+
+If you did not register, ignore this email.
+
+{% endautoescape %}-

@@ -18,10 +18,7 @@ class AppointmentReadSerializer(serializers.ModelSerializer):
 class AppointmentWriteSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(many=False, queryset=Patient.objects.all())
     doctor = serializers.PrimaryKeyRelatedField(many=False, queryset=Doctor.objects.all())
-    time = serializers.PrimaryKeyRelatedField(
-    many=False,
-    queryset=AvailableTime.objects.all()
-)
+    time = serializers.PrimaryKeyRelatedField(queryset=AvailableTime.objects.all())
     
     class Meta:
         model = Appointment

@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+import os
+import environ
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4=99f581ozpp3fc9cx^6sm9ej1-iyan(k_j+itmwa5oij10_z2'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'rest_framework_simplejwt',
     'rest_framework',
     'appointment',
     'doctor',
@@ -130,11 +136,62 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10
 }
 
+# ACCOUNT_ACTIVATION_TIMEOUT_DAYS = 7
 
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+#     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+#     # 'ROTATE_REFRESH_TOKENS': True,
+#     # 'BLACKLIST_AFTER_ROTATION': True,
+    
+#     'ALGORITHM': 'HS256',
+#     'SIGNING_KEY': SECRET_KEY,            # keep as SECRET_KEY
+#     'USER_ID_CLAIM': 'user_id',
+    
+#     # Activation token settings
+#     'ACTIVATION_TOKEN_LIFETIME': timedelta(days=7),
+# }
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = env("EMAIL")
+# EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD")
+
+
+
+# EMAIL_BACKEND = env("EMAIL_BACKEND")
+# EMAIL_HOST = env("EMAIL_HOST")
+# EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+# EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+# EMAIL_PORT = env.int("EMAIL_PORT")
+# EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
+# Looking to send emails in production? Check out our Email API/SMTP product!
+
+
+env = environ.Env(
+    EMAIL_HOST=(str, 'localhost'),
+    EMAIL_HOST_USER=(str, ''),
+    EMAIL_HOST_PASSWORD=(str, ''),
+    EMAIL_PORT=(int, 25),
+)
+environ.Env.read_env(env_file=os.path.join(BASE_DIR, '.env'))  # loads .env
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
