@@ -1,11 +1,23 @@
-{% autoescape off %}
-Hi {{ user.first_name }},
-
-Thanks for registering!
-Please click below to activate your account:
-
-<a href="{{ activation_link }}" target="_blank">{{ activation_link }}</a>
-
-If you did not register, ignore this email.
-
-{% endautoescape %}-
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h2>Activate Your Account</h2>
+    <p>Hi {{ user.first_name }},</p>
+    
+    <p>Thanks for registering! Please click the link below to activate your account:</p>
+    
+    <p>
+        <a href="{{ activation_link }}" style="background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Activate Account
+        </a>
+    </p>
+    
+    <p>Or copy and paste this link in your browser:</p>
+    <p>{{ activation_link }}</p>
+    
+    <p>If you did not register, please ignore this email.</p>
+</body>
+</html>
