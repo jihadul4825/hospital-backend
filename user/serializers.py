@@ -2,8 +2,6 @@ from rest_framework import serializers
 from .models import Account
 from django.db import transaction
 
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
 
@@ -69,3 +67,24 @@ class AccountSerializer(serializers.ModelSerializer):
         return instance
 
 
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(request=self.context.get('request'), email=email, password=password)
+            
+            if not user:
+                msg = 'Unable to log in with provided credentials.'
+                raise serializers.ValidationError(msg)
+
+        else:
+            msg = 'Must include "username" and "password".'
+            raise serializers.ValidationError(msg)
+
+        attrs['user'] = user
+        return attrs

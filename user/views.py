@@ -4,15 +4,18 @@ from rest_framework.response import Response
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from .models import Account
-from .serializers import AccountSerializer
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import redirect
+from rest_framework.authtoken.models import Token
+
+from .models import Account
+from .serializers import AccountSerializer, UserLoginSerializer
+
 
 
 class UserRegistrationView(generics.GenericAPIView):
@@ -55,3 +58,26 @@ class ActivationView(APIView):
             # return redirect('register')
         else:
             return Response({"error": "Invalid activation link"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class UserLoginView(generics.GenericAPIView):
+    serializer_class = UserLoginSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+
+            if user:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({
+                    'token': token.key, 
+                    'user_id': user.id,
+                    'email': user.email,
+                    'username': user.username
+                }, status=status.HTTP_200_OK)
+                
+            else:
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
