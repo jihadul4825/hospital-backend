@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from .models import Appointment
 from .serializers import AppointmentReadSerializer, AppointmentWriteSerializer
 
 
 class AppointmentViewSet(viewsets.ModelViewSet) :
+    permission_classes = [IsAuthenticated]
     queryset = Appointment.objects.select_related(
         'patient__user', 
         'doctor__user', 

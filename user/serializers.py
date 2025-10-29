@@ -88,3 +88,11 @@ class UserLoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+    
+
+# class LogoutSerializer(serializers.Serializer):  # for JWT
+#     refresh = serializers.CharField(required=True)
+
+#     def validate(self, attrs):
+#         self.refresh_token = attrs['refresh']
+#         return attrs    

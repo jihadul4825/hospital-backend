@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt.token_blacklist',  # Add this for logout
     'rest_framework',
     'rest_framework.authtoken',
     'appointment',
@@ -139,27 +140,25 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10
 }
 
-# ACCOUNT_ACTIVATION_TIMEOUT_DAYS = 7
 
+# Activation settings (add this)
+ACCOUNT_ACTIVATION_TIMEOUT_DAYS = 7
+
+# # JWT settings 
 # SIMPLE_JWT = {
 #     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
 #     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
-#     # 'ROTATE_REFRESH_TOKENS': True,
-#     # 'BLACKLIST_AFTER_ROTATION': True,
-    
-#     'ALGORITHM': 'HS256',
-#     'SIGNING_KEY': SECRET_KEY,            # keep as SECRET_KEY
-#     'USER_ID_CLAIM': 'user_id',
-    
-#     # Activation token settings
-#     'ACTIVATION_TOKEN_LIFETIME': timedelta(days=7),
+#     'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': True,
 # }
 
 
