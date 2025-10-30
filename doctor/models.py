@@ -2,6 +2,7 @@ from django.db import models
 from user.models import Account
 from patient.models import Patient
 from django.utils.text import slugify
+from django.utils import timezone
 
 
 class Specialization(models.Model):
@@ -35,7 +36,7 @@ class AvailableTime(models.Model):
         return self.name
     
 class Doctor(models.Model):
-    user = models.OneToOneField(Account, on_delete=models.CASCADE)
+    user = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='doctor')
     image = models.ImageField(upload_to="doctor/images", null=True, blank=True)
     designation = models.ManyToManyField(Designation)
     specialization = models.ManyToManyField(Specialization)
@@ -65,3 +66,22 @@ class Review(models.Model):
     def __str__(self):
         return f"Patient : {self.reviewer.user.first_name} {self.reviewer.user.last_name} | Doctor : {self.doctor.user.first_name} {self.doctor.user.last_name}"
 
+
+class DoctorApproval(models.Model):
+    doctor = models.OneToOneField(Doctor, on_delete=models.CASCADE, related_name='approval')
+    is_approved = models.BooleanField(default=False)
+    approved_at = models.DateTimeField(blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        if self.is_approved and not self.approved_at:
+            self.approved_at = timezone.now()
+        if not self.is_approved:
+            self.approved_at = None
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        status = "Approved" if self.is_approved else "Pending"
+        return f"{self.doctor.user.first_name} {self.doctor.user.last_name} - {status}"
+    
+    class Meta:
+        verbose_name_plural = "Doctor Approvals"

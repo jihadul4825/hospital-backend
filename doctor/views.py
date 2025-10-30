@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
-from .custom_permissions import IsAdminOrDoctor, IsAdminOrDoctorOrReadOnly
+from .custom_permissions import IsAdminOrApprovedDoctor, IsAdminOrApprovedDoctorOrReadOnly
 from rest_framework import viewsets
 from .models import Designation, Doctor, Specialization, AvailableTime, Review
 from .serializers import (
@@ -18,14 +18,18 @@ class DoctorViewSet(viewsets.ModelViewSet):
         'designation', 'specialization', 'available_time'
     ).all()
     
-    # permission_classes = [IsAdminOrDoctorOrReadOnly]   # approach 1
+    # permission_classes = [IsAdminOrApprovedDoctorOrReadOnly]   # approach 1
+
     
-    def get_permissions(self):  # approach 2
-        if self.action in ['create', 'update', 'partial_update']:
-            permission_classes = [IsAdminOrDoctor]
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminOrApprovedDoctor]
         else:
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
+
         
         
     def get_serializer_class(self):
@@ -35,19 +39,19 @@ class DoctorViewSet(viewsets.ModelViewSet):
     
 
 class DesignationViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrDoctorOrReadOnly]
+    permission_classes = [IsAdminOrApprovedDoctorOrReadOnly]
     queryset = Designation.objects.all()
     serializer_class = DesignationSerializer
 
 
 class SpecializationViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrDoctorOrReadOnly]
+    permission_classes = [IsAdminOrApprovedDoctorOrReadOnly]
     queryset = Specialization.objects.all()
     serializer_class = SpecializationSerializer
 
 
 class AvailableTimeViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrDoctorOrReadOnly]
+    permission_classes = [IsAdminOrApprovedDoctorOrReadOnly]
     queryset = AvailableTime.objects.all()
     serializer_class = AvailableTimeSerializer
 

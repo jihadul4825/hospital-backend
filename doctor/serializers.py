@@ -42,13 +42,7 @@ class DoctorReadSerializer(serializers.ModelSerializer):
         
 #  -------- Write serializer ---------
 class DoctorWriteSerializer(serializers.ModelSerializer):
-    # show user if user is not patient
-    user = serializers.PrimaryKeyRelatedField(
-        many=False, 
-        queryset=Account.objects.select_related('doctor', 'patient').filter(is_staff=False, is_superuser=False)
-        .exclude(patient__isnull=False)
-        # .exclude(doctor__isnull=False,)
-    )
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     designation = serializers.PrimaryKeyRelatedField(many=True, queryset=Designation.objects.all())
     specialization = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialization.objects.all())
     available_time = serializers.PrimaryKeyRelatedField(many=True, queryset=AvailableTime.objects.all())
@@ -60,16 +54,26 @@ class DoctorWriteSerializer(serializers.ModelSerializer):
             'fee', 'meet_link'
         ]
         
-    
-    def validate_user(self, value):
-        # If creating, reject any Account that already has a Doctor
-        if self.instance is None and hasattr(value, 'doctor'):
-            raise serializers.ValidationError("User already has a Doctor")
         
-        # If updating, allow the same user but disallow switching to another already-doctor user
+    def validate_user(self, value):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            raise serializers.ValidationError("Authentication required.")
+
+        # Non-admins cannot create a doctor for another account
+        if not (request.user.is_staff or request.user.is_superuser) and value != request.user:
+            raise serializers.ValidationError("You can only create a doctor profile for yourself.")
+
+        # When creating, reject any Account that already has a Doctor
+        if self.instance is None and hasattr(value, 'doctor'):
+            raise serializers.ValidationError("User already has a Doctor profile.")
+
+        # When updating, prevent switching to another already-doctor user
         if self.instance is not None and value != self.instance.user and hasattr(value, 'doctor'):
             raise serializers.ValidationError("Selected account already belongs to another doctor.")
-        return value 
+
+        return value
+
         
     
     def create(self, validated_data):
