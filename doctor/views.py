@@ -24,7 +24,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = [IsAuthenticated]
-        if self.action in ['update', 'partial_update', 'destroy']:
+        elif self.action in ['update', 'partial_update', 'destroy']:
             permission_classes = [IsAdminOrApprovedDoctor]
         else:
             permission_classes = [AllowAny]

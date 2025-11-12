@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Appointment, Doctor, Patient, AvailableTime
 from django.db import transaction
+from .validators import validate_appointment_time
 
 
 class AppointmentReadSerializer(serializers.ModelSerializer):
@@ -16,8 +17,9 @@ class AppointmentReadSerializer(serializers.ModelSerializer):
     
 
 class AppointmentWriteSerializer(serializers.ModelSerializer):
-    patient = serializers.PrimaryKeyRelatedField(many=False, queryset=Patient.objects.all())
-    doctor = serializers.PrimaryKeyRelatedField(many=False, queryset=Doctor.objects.all())
+    
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+    doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
     time = serializers.PrimaryKeyRelatedField(queryset=AvailableTime.objects.all())
     
     class Meta:
@@ -25,33 +27,39 @@ class AppointmentWriteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'patient', 'doctor', 'time', 'appointment_types', 'symptom', 'appointment_status', 'cancel'
         ]
+        
+    
+    def __init__(self, *args, **kwargs):
+        """
+        Dynamically filter `time` field queryset
+        based on the selected doctor (from request data or instance).
+        """
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+
+        doctor_id = None
+
+        # Case 1: from request data (POST/PUT)
+        if request:
+            doctor_id = request.data.get('doctor') or request.query_params.get('doctor')
+
+        # Case 2: when updating an instance
+        if not doctor_id and self.instance and self.instance.doctor_id:
+            doctor_id = self.instance.doctor_id
+
+        # Set the time field dynamically
+        if doctor_id:
+            self.fields['time'].queryset = AvailableTime.objects.filter(doctor_id=doctor_id)
+        else:
+            self.fields['time'].queryset = AvailableTime.objects.none()  # no doctor selected yet
 
 
     def validate(self, attrs):
         """
-        Custom validation logic:
-        - Only allow selecting times available for that doctor.
-        - Prevent duplicate appointments (same doctor, same time, same patient).
+        Ensure selected time exists for the chosen doctor
+        and prevent duplicate appointments.
         """
-        doctor = attrs.get('doctor')
-        patient = attrs.get('patient')
-        time = attrs.get('time')
-        
-       # Ensure the chosen time is one of the doctor's available times
-        if not doctor.available_time.filter(id=time.id).exists():
-            raise serializers.ValidationError({
-                "time": f"This time slot ('{time}') is not available for Dr. {doctor.user.first_name}."
-            })
-        
-        
-        # Prevent duplicate appointment with same doctor & time
-        if Appointment.objects.filter(doctor=doctor, time=time, patient=patient, cancel=False).exists():
-            raise serializers.ValidationError({
-                "non_field_errors": [
-                    f"You already have an appointment with Dr. {doctor.user.first_name} at '{time}'."
-                ]
-            })
-        
+        validate_appointment_time(attrs.get('doctor'), attrs.get('patient'), attrs.get('time'))
         return attrs
     
     @transaction.atomic
@@ -64,5 +72,5 @@ class AppointmentWriteSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-        
 
+        

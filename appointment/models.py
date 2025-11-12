@@ -1,7 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
 from patient.models import Patient
 from doctor.models import Doctor, AvailableTime
+from .validators import validate_appointment_time
 
 
 APPOINTMENT_STATUS = [
@@ -23,6 +23,11 @@ class Appointment(models.Model):
     time = models.ForeignKey(AvailableTime, on_delete=models.CASCADE)
     cancel = models.BooleanField(default=False)
     
+    
+    def clean(self):
+        validate_appointment_time(self.doctor, self.patient, self.time)
+    
+    
     def __str__(self):
         return f"Patient : {self.patient.user.first_name} {self.patient.user.last_name} | Doctor : {self.doctor.user.first_name} {self.doctor.user.last_name}"
-
+        
