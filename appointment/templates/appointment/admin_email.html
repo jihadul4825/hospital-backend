@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h3>Hello {{ user.first_name }} {{ user.last_name }},</h3>
+    
+    <p>Hope you are doing well. You requested for an online appointment with Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</p>
+
+    <p>Your doctor is available to meet with you. Join the below link as soon as possible</p>
+    
+    <p>
+        <a href="{{ doctor.meet_link }}" target="_blank" style="background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Join Now
+        </a>
+    </p>
+    
+    <p>Thanks.</p>
+    <p>SmartCare</p>
+</body>
+</html>

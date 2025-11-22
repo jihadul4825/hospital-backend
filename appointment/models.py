@@ -7,7 +7,7 @@ from .validators import validate_appointment_time
 APPOINTMENT_STATUS = [
     ("pending", "pending"),
     ("approved", "approved"),
-    ("Running", "Running"),
+    ("running", "running"),
 ]
 
 APPOINTMENT_TYPES = [
