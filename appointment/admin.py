@@ -114,18 +114,12 @@ class AppointmentAdminForm(ModelForm):
                     doctor=doctor,
                     patient=patient,
                     time=time,
+                    instance=self.instance # pass the the current instance
                 )
             except ValidationError as e:
-                # Handle both dictionary errors and string errors
-                if hasattr(e, 'message_dict'):
-                    # This is a dictionary of field errors
-                    for field, messages in e.message_dict.items():
-                        for message in messages:
-                            self.add_error(field, message)
-                else:
-                    # This is a non-field error (string)
-                    for message in e.messages:
-                        self.add_error(None, message)  # None means non-field error
+                # This is a non-field error (string)
+                for message in e.messages:
+                    self.add_error(None, message)  # None means non-field error
         
         return cleaned_data
 

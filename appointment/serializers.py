@@ -62,7 +62,8 @@ class AppointmentWriteSerializer(serializers.ModelSerializer):
         validate_appointment(
             doctor=data.get('doctor'), 
             patient=data.get('patient'), 
-            time=data.get('time')
+            time=data.get('time'),
+            instance=self.instance # pass the the current instance for update
         )
         return data
     
