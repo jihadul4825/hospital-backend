@@ -1,23 +1,43 @@
 from django.core.exceptions import ValidationError
 
-def validate_appointment_time(doctor, patient, time):
-    from .models import Appointment
-    # Ensure selected time belongs to doctor
-    if doctor and time and not doctor.available_time.filter(id=time.id).exists():
-        raise ValidationError({
-            "time": f"This time slot ('{time}') is not available for Dr. {doctor.user.first_name}."
+def validate_appointment(doctor=None, patient=None, time=None):
+    """
+        One validator used by BOTH Django Admin and DRF.
+    """
+    
+    errors = {}
 
-        })
+    # --- doctor ---
+    if not doctor:
+        errors["doctor"] = "Please select a doctor."
+
+    # --- patient ---
+    if not patient:
+        errors["patient"] = "Please select a patient."
+
+    # --- time ---
+    if not time:
+        errors["time"] = "Please select a time."
+    else:
+        # validate time belongs to doctor
+        if doctor and not doctor.available_time.filter(id=time.id).exists():
+            errors["time"] = (
+                f"This time '{time}' is not available for Dr. "
+                f"{doctor.user.first_name if doctor else ''}."
+            )
         
     # Prevent duplicate appointment
-    if Appointment.objects.select_related('patient', 'doctor', 'time').filter(
-        doctor=doctor,
-        time=time,
-        patient=patient,
-        cancel=False
-    ).exists():
-        raise ValidationError({
-            "non_field_errors": [
-                f"You already have an appointment with Dr. {doctor.user.first_name} at '{time}'."
+    if doctor and patient and time:
+        from .models import Appointment
+        if Appointment.objects.filter(
+            doctor=doctor,
+            patient=patient,
+            time=time,
+            cancel=False
+        ).exists():
+            errors["non_field_errors"] = [
+                f"You already have an appointment at '{time}' with this doctor."
             ]
-        })
+            
+    if errors:
+        raise ValidationError(errors)

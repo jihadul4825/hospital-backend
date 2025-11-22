@@ -1,7 +1,7 @@
 from django.db import models
 from patient.models import Patient
 from doctor.models import Doctor, AvailableTime
-from .validators import validate_appointment_time
+from .validators import validate_appointment
 
 
 APPOINTMENT_STATUS = [
@@ -25,9 +25,24 @@ class Appointment(models.Model):
     
     
     def clean(self):
-        validate_appointment_time(self.doctor, self.patient, self.time)
+        validate_appointment(
+            doctor=self.doctor,
+            patient=self.patient,
+            time=self.time
+        )
     
     
     def __str__(self):
-        return f"Patient : {self.patient.user.first_name} {self.patient.user.last_name} | Doctor : {self.doctor.user.first_name} {self.doctor.user.last_name}"
+        patient_name = (
+            f"{self.patient.user.first_name} {self.patient.user.last_name}"
+            if self.patient else "Unknown Patient"
+        )
+
+        doctor_name = (
+            f"{self.doctor.user.first_name} {self.doctor.user.last_name}"
+            if self.doctor else "Unknown Doctor"
+        )
+
+        return f"Patient: {patient_name} | Doctor: {doctor_name}"
+
         

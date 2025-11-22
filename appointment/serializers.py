@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Appointment, Doctor, Patient, AvailableTime
 from django.db import transaction
-from .validators import validate_appointment_time
+from .validators import validate_appointment
 
 
 class AppointmentReadSerializer(serializers.ModelSerializer):
@@ -54,13 +54,17 @@ class AppointmentWriteSerializer(serializers.ModelSerializer):
             self.fields['time'].queryset = AvailableTime.objects.none()  # no doctor selected yet
 
 
-    def validate(self, attrs):
+    def validate(self, data):
         """
         Ensure selected time exists for the chosen doctor
         and prevent duplicate appointments.
         """
-        validate_appointment_time(attrs.get('doctor'), attrs.get('patient'), attrs.get('time'))
-        return attrs
+        validate_appointment(
+            doctor=data.get('doctor'), 
+            patient=data.get('patient'), 
+            time=data.get('time')
+        )
+        return data
     
     @transaction.atomic
     def create(self, validated_data):
