@@ -90,7 +90,7 @@ class Appointment(models.Model):
                 doctor=self.doctor,
                 patient=self.patient,
                 time=self.time,
-                instance=self # pass the the current instance: optional
+                instance=self # pass the the current instance
             )
         except ValidationError as e:
             raise e
