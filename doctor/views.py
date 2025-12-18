@@ -70,7 +70,12 @@ class SpecializationViewSet(viewsets.ModelViewSet):
 #     serializer_class = AvailableTimeSerializer
 #     filter_backends = [SpecificTimeforEachDoctor]
 
-class AvailableTimeViewSet(viewsets.ModelViewSet):
+
+'''
+you can see all available times # http://127.0.0.1:8000/doctors/available_time/
+you can see the available times for each doctor # http://127.0.0.1:8000/doctors/available_time/?doctor_id=3
+'''
+class AvailableTimeViewSet(viewsets.ModelViewSet): 
     permission_classes = [IsAdminOrApprovedDoctorOrReadOnly]
     queryset = AvailableTime.objects.prefetch_related('doctor_set').all()
     serializer_class = AvailableTimeSerializer
